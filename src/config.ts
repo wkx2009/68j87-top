@@ -9,13 +9,13 @@ import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
 	title: "wkx2009的边角料工坊",
-	subtitle: "正在制作中...",
+	subtitle: "正在施工中...",
 	lang: "zh_CN",
 	themeColor: {
 		hue: 250,
 		fixed: false,
 	},
-	banner: {
+	banner: {       //默认背景横幅，不建议和API背景系统同时打开
 		enable: false,
 		src: "/images/default-banner.webp",
 		position: "center",
@@ -25,7 +25,7 @@ export const siteConfig: SiteConfig = {
 			url: "",
 		},
 	},
-	// API 背景系统（自定义字段，类型可能不包含，先保留）
+	// API 背景系统
 	apibanner: {
 		enable: true,
 		defaultSrc: "/images/default-banner.webp",
@@ -78,7 +78,7 @@ export const profileConfig: ProfileConfig = {
 		{
 			name: "GitHub",
 			icon: "fa6-brands:github",
-			url: "https://github.com/wkx2009",
+			url: "https://github.com/wkx2009/68j87-top",
 		},
 	],
 };
