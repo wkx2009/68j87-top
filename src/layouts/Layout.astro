@@ -1,0 +1,182 @@
+---
+import "../styles/global.css";
+import Footer from  "@components/Footer.astro";
+import ConfigCarrier from "@components/ConfigCarrier.astro";
+import { profileConfig, siteConfig } from "@/config";
+import {
+	AUTO_MODE,
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_HOME,
+	DARK_MODE,
+	DEFAULT_THEME,
+	LIGHT_MODE,
+	PAGE_WIDTH,
+} from "../constants/constants";
+import { defaultFavicons } from "../constants/icon";
+import type { Favicon } from "../types/config";
+import { pathsEqual, url } from "../utils/url-utils";
+import "katex/dist/katex.css";
+
+interface Props {
+	title?: string;
+	banner?: string;
+	description?: string;
+	lang?: string;
+	setOGTypeArticle?: boolean;
+}
+
+let { title, banner, description, lang, setOGTypeArticle } = Astro.props;
+
+const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
+
+const configHue = siteConfig.themeColor.hue;
+
+if (!banner || typeof banner !== "string" || banner.trim() === "") {
+	banner = siteConfig.banner.src;
+}
+
+const enableBanner = siteConfig.banner.enable;
+
+let pageTitle: string;
+if (title) {
+	pageTitle = `${title} - ${siteConfig.title}`;
+} else {
+	pageTitle = `${siteConfig.title} - ${siteConfig.subtitle}`;
+}
+
+const favicons: Favicon[] =
+	siteConfig.favicon.length > 0 ? siteConfig.favicon : defaultFavicons;
+
+if (!lang) {
+	lang = `${siteConfig.lang}`;
+}
+const siteLang = lang.replace("_", "-");
+
+const bannerOffsetByPosition = {
+	top: `${BANNER_HEIGHT_EXTEND}vh`,
+	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
+	bottom: "0",
+};
+const bannerOffset =
+	bannerOffsetByPosition[siteConfig.banner.position || "center"];
+---
+
+<!DOCTYPE html>
+<html lang={siteLang} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]">
+	<head>
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/misans/misans-webfont/misans-style.css">
+
+		<title>{pageTitle}</title>
+
+		<meta charset="UTF-8" />
+		<meta name="description" content={description || pageTitle}>
+		<meta name="author" content={profileConfig.name}>
+
+		<meta property="og:site_name" content={siteConfig.title}>
+		<meta property="og:url" content={Astro.url}>
+		<meta property="og:title" content={pageTitle}>
+		<meta property="og:description" content={description || pageTitle}>
+		<meta property="og:type" content={setOGTypeArticle ? "article" : "website"}>
+
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+
+		{favicons.map(favicon => (
+			<link rel="icon"
+				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}
+				  sizes={favicon.sizes}
+				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
+			/>
+		))}
+
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
+			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
+			if (theme === DARK_MODE || (theme === AUTO_MODE && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+				document.documentElement.classList.add('dark');
+			}
+
+			const hue = localStorage.getItem('hue') || configHue;
+			document.documentElement.style.setProperty('--hue', hue);
+
+			let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
+			offset = offset - offset % 4;
+			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+		</script>
+
+		<style define:vars={{
+			'page-width': `${PAGE_WIDTH}rem`,
+		}}></style>
+
+		<slot name="head"></slot>
+
+	</head>
+
+	<body class="min-h-screen flex flex-col relative">
+  <!-- 背景层：固定在全屏，最底层 -->
+  <div id="page-background" class="fixed inset-0 z-0"></div>
+
+  <!-- 原有内容层 -->
+  <ConfigCarrier />
+  <main class="relative z-10">
+    <slot />
+  </main>
+    
+    <script is:inline define:vars={{
+  apiEnable: siteConfig.apibanner.enable,
+  apiList: siteConfig.apibanner.apiList,
+  defaultSrc: siteConfig.apibanner.defaultSrc
+}}>
+(function () {
+  const bg = document.getElementById("page-background");
+
+  if (!bg) return;
+
+  // 初始颜色（防白屏）
+  bg.style.backgroundColor = "#0f172a";
+
+  // ❌ 禁用 API → 直接用本地
+  if (!apiEnable || !apiList.length) {
+    bg.style.backgroundImage = `url('${defaultSrc}')`;
+    applyStyle();
+    return;
+  }
+
+  let index = 0;
+
+  function applyStyle() {
+    bg.style.backgroundSize = "cover";
+    bg.style.backgroundPosition = "center";
+    bg.style.backgroundAttachment = "fixed";
+  }
+
+  function tryNext() {
+    if (index >= apiList.length) {
+      // 全部失败 → 用默认图
+      bg.style.backgroundImage = `url('${defaultSrc}')`;
+      applyStyle();
+      return;
+    }
+
+    const api = apiList[index++];
+    const img = new Image();
+
+    img.onload = () => {
+      bg.style.backgroundImage = `url('${api}')`;
+      applyStyle();
+    };
+
+    img.onerror = tryNext;
+
+    img.src = api;
+  }
+
+  tryNext();
+})();
+</script>
+
+  <!-- 页脚放在内容层上，z-index 10 -->
+  <!--<Footer class="relative z-10"/> -->
+</body>
+</html>

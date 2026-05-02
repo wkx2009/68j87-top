@@ -1,0 +1,49 @@
+---
+import { profileConfig } from "@/config"; // 导入用户配置
+import { url } from "@/utils/url-utils"; // 导入 url 工具，如果你在链接里用到了 url()
+const currentYear = new Date().getFullYear(); // 当前年份
+---
+
+<footer class="w-full pt-8 pb-10 mt-18">
+  <!-- 内层容器：限制宽度并水平居中，左右留一点间距 -->
+  <div class="max-w-[var(--page-width)] mx-auto px-4">
+    
+    <!-- 虚线 -->
+    <div class="border-t border-dashed border-black/20 dark:border-white/20 mb-6"></div>
+    
+    <!-- 文字居中 -->
+    <div class="text-center text-base leading-relaxed">
+      <p>&copy; {currentYear} {profileConfig.name}. All Rights Reserved.</p>
+      <p class="mt-1">
+        <a class="link" href={url('rss.xml')}>RSS</a>
+        <span class="mx-1">·</span>
+        <a class="link" href={url('sitemap-index.xml')}>Sitemap</a>
+      </p>
+      <p class="mt-3 text-base opacity-60">
+        Powered by <a class="link" href="https://github.com/wkx2009" target="_blank">wkx2009</a> &
+        <a class="link" href="https://github.com/saicaca/fuwari" target="_blank">Fuwari</a>
+      </p>
+    </div>
+    
+  </div>
+</footer>
+
+<style>
+.footer {
+  width: 100%;
+  padding: 2rem 1rem;
+  border-top: 1px dashed rgba(0,0,0,0.2);
+}
+
+.dark .footer {
+  border-top: 1px dashed rgba(255,255,255,0.2);
+}
+
+.footer-inner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+</style>
